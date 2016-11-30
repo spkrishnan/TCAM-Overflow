@@ -1,0 +1,62 @@
+#Copyright 2016 Juniper Networks, Inc. All rights reserved.
+#Licensed under the Juniper Networks Script Software License (the "License"). 
+#You may not use this script file except in compliance with the License, which is located #at http://www.juniper.net/support/legal/scriptlicense/
+#Unless required by applicable law or otherwise agreed to in writing by the parties, #software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT #WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+
+
+
+
+
+version 1.1;
+
+ns junos = "http://xml.juniper.net/junos/*/junos";
+ns xnm = "http://xml.juniper.net/xnm/1.1/xnm";
+ns jcs = "http://xml.juniper.net/junos/commit-scripts/1.0";
+ns ext = "http://xmlsoft.org/XSLT/namespace";
+ns slax = "http://xml.libslax.org/slax";
+ns my = "http://www.example.com/myfunctions";
+
+import "../import/junos.xsl";
+
+match / {
+	var $conn = jcs:open();
+	var $filename = '/var/log/tcamlog';
+	var $encoding = 'ascii';
+	var $fileget = {
+               <file-get> {
+                    <filename>$filename;
+                    <encoding>$encoding;
+               }
+	}
+	var $log_file = jcs:execute($conn, $fileget);
+ 	var $pattern = "No space available in tcam for";
+ 		
+	var $options := {
+   		 <commit-options> {
+       			<synchronize>;
+       		 	<log> "TCAM Full - Rolling back changes";
+		}
+	}
+	expr jcs:sleep(10);
+        var $temp = "Cleared by TCAM Full Event Script";
+        var $fileput = {
+               <file-put> {
+                    <filename>$filename;
+                    <encoding>$encoding;
+                    <permission>'0644';
+                    <delete-if-exist>;
+                    <file-contents>$temp;
+               }
+          }
+	var $results = jcs:regex($pattern, $log_file);
+	if (not($results)) {
+		}
+		else {
+			var $rollback-results := {
+    				call jcs:load-configuration($rollback=1, $commit-options=$options, $connection = $conn);
+			}
+			var $temp_results = jcs:execute($conn, $fileput);
+		}
+	var $close-results = jcs:close($conn);
+}
