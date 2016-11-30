@@ -8,11 +8,11 @@ The goal of this script is to monitor the TCAM usage on the switch and rollback 
 - This log file is cleared after the rollback
 
 Here is the configuration required on the switch to run it.
-set event-options generate-event TCAM_CUSTOM_EVENT time-interval 60
-set event-options policy CHECKTCAMSTATUS events TCAM_CUSTOM_EVENT
-set event-options policy CHECKTCAMSTATUS then event-script tcam_rollback.slax
-set event-options event-script file tcam_rollback.slax
-set system syslog file tcamlog any any
+- set event-options generate-event TCAM_CUSTOM_EVENT time-interval 60
+- set event-options policy CHECKTCAMSTATUS events TCAM_CUSTOM_EVENT
+- set event-options policy CHECKTCAMSTATUS then event-script tcam_rollback.slax
+- set event-options event-script file tcam_rollback.slax
+- set system syslog file tcamlog any any
 
  
 - Copy the script to “/var/db/scripts/event” directory
